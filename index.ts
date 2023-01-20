@@ -1,8 +1,9 @@
 import { httpServer } from "./src/http_server/index";
 import { down, left, mouse, right, up } from "@nut-tree/nut-js";
 import WebSocket, { createWebSocketStream, WebSocketServer } from 'ws';
-import { getActiveWindowRegion, getKeyValue, getMousePosition, moveMouseSquare } from "./src/mousehandler/mousehandler";
+import { getActiveWindowRegion, getMousePosition, moveMouse } from "./src/mousehandler/mousehandler";
 import { send } from "process";
+import { drawCircle, drawRectangle, drawSquare } from './src/mousehandler/drawers';
 
 const HTTP_PORT = 8181;
 const ALT_HTTP_PORT = 8080;
@@ -12,31 +13,6 @@ httpServer.listen(HTTP_PORT);
 
 const wss = new WebSocketServer({ port: ALT_HTTP_PORT });
 
-// wss.on("connection", async (ws) => {
-//     const wsStream = createWebSocketStream(ws, {
-//         encoding: "utf-8",
-//         decodeStrings: false,
-//     });
-
-//     wsStream.on("data", async (chunk) => {
-//         const [func, ...args] = chunk.toString().split(" ");
-
-//         if (func === "mouse_up") {
-//             console.log(args);
-//         }
-
-//         if (func === "mouse_down") {
-//             console.log(args);
-//         }
-
-//         if (func === "mouse_position") {
-//         }
-//     });
-
-//     console.log(`The WebSocket server is running on port ${ALT_HTTP_PORT}`);
-// });
-
-
 // // const ws = new WebSocket(`ws://localhost:${ALT_HTTP_PORT}`);
 // // const duplex = createWebSocketStream(ws, { encoding: 'utf8' });
 
@@ -44,82 +20,110 @@ const wss = new WebSocketServer({ port: ALT_HTTP_PORT });
 // // process.stdin.pipe(duplex);
 
 
-
 wss.on('connection', async (ws) => {
-    console.log('Connection opened');
+    try {
+        console.log('Connection opened');
 
-    const wsStream = createWebSocketStream(ws, {
-        encoding: "utf-8",
-        decodeStrings: false,
-    });
+        const wsStream = createWebSocketStream(ws, {
+            encoding: "utf-8",
+            decodeStrings: false,
+        });
 
-    // let result: any;
+        wsStream.on("data", async (chunk: any) => {
+            const [command, ...args] = chunk.toString().split(" ");
 
+            const moveStep = Number(args[0]);
+            const direction = command.toString().split("_")[1];
 
-    wsStream.on("data", async (chunk: any) => {
-        const [command, ...args] = chunk.toString().split(" ");
+            const width = moveStep;
+            const length = Number(args[1]);
+            const radius = moveStep;
 
+            console.log(command);
 
-        if (command === "mouse_up") {
-            await mouse.move(up(args[0]));
-        }
+            switch (direction) {
+                case 'up':
+                    await moveMouse(up, moveStep);
+                    ws.send(command);
+                    break;
 
-        if (command === "mouse_down") {
-            await mouse.move(down(Number(args[0])));
-        }
+                case 'down':
+                    await moveMouse(down, moveStep);
+                    ws.send(command);
+                    break;
 
-        if (command === "mouse_left") {
-            await mouse.move(left(Number(args[0])));
-        }
+                case 'left':
+                    await moveMouse(left, moveStep);
+                    ws.send(command);
+                    break;
 
-        if (command === "mouse_right") {
-            await mouse.move(right(Number(args[0])));
-        }
+                case 'right':
+                    await moveMouse(right, moveStep);
+                    ws.send(command);
+                    break;
 
-        if (command === "mouse_position") {
-            const { x, y } = await getMousePosition();
-            const result = `mouse_position ${x}px,${y}px`;
+                case 'position':
+                    const { x, y } = await getMousePosition();
+                    const result = `mouse_position ${x}px,${y}px`;
+                    ws.send(result);
+                    break;
 
-            ws.send(result);
-        }
-    });
+                case 'rectangle':
+                    await drawRectangle(width, length);
+                    ws.send(command);
+                    break;
 
-    console.log(`The WebSocket server is running on port ${ALT_HTTP_PORT}`);
-    // ws.send(moveMouse());
-    // ws.on('open', () => {
-    // });
+                case 'square':
+                    await drawSquare(width);
+                    ws.send(command);
+                    break;
 
-    // ws.on('message', (data) => {
-    //     console.log('received: %s', data);
-    //     // wss.clients.forEach(client => client.send(data));
-    // });
+                case 'circle':
+                    await drawCircle(radius);
+                    ws.send(command);
+                    break;
 
-    wsStream.on('message', (data: any, isBinary) => {
-        const message = data.toString('utf-8');
-        console.log(message);
-
-        // if (message.type === 'NEW_MESSAGE') {
-        wss.clients.forEach(async (client) => {
-            if (client.readyState === WebSocket.OPEN) {
-                // client !== ws && 
-                // getActiveWindowRegion();
-                // moveMouse();
-                client.send(data, { binary: isBinary });
-                // if (message === "s") {
-                // await getKeyValue("s");
-                // await moveMouseSquare();
-
-                // }
+                default:
+                    await moveMouse(up, moveStep);
+                    ws.send(command);
+                    console.log('default Up');
+                    break;
             }
         });
-    });
 
-    ws.on('close', () => {
-        console.log('Connection closed');
-    });
+        console.log(`The WebSocket server is running on port ${ALT_HTTP_PORT}`);
 
-    ws.on('error', (e) => {
+        // wsStream.on('message', (data: any, isBinary) => {
+        //     const message = data.toString('utf-8');
+        //     console.log(message);
+
+        //     // if (message.type === 'NEW_MESSAGE') {
+        //     wss.clients.forEach(async (client) => {
+        //         if (client !== ws && client.readyState === WebSocket.OPEN) {
+        //             // client !== ws && 
+        //             // getActiveWindowRegion();
+        //             // moveMouse();
+        //             client.send(data, { binary: isBinary });
+        //             // if (message === "s") {
+        //             // await getKeyValue("s");
+        //             // await moveMouseSquare();
+
+        //             // }
+        //         }
+        //     });
+        // });
+
+        ws.on('close', () => {
+            console.log('Connection closed');
+        });
+
+        ws.on('error', (e) => {
+            throw new Error(e.message);
+        });
+    } catch (e: any) {
         throw new Error(e.message);
-    });
-
+    }
 });
+
+// stream = createWebSocketStream(ws, options)
+// stream.write(...)
