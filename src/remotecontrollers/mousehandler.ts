@@ -12,7 +12,3 @@ export const getMousePosition = async () => {
 export const moveMouse = async (direction: any, moveStep: number) => {
     await mouse.move(direction(moveStep));
 };
-
-// export const setMousePosition = async () => {
-//     await getMousePosition();
-// };

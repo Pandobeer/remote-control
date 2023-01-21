@@ -17,17 +17,21 @@ export const drawRectangle = async (width: number, length: number) => {
 };
 
 export const drawCircle = async (radius: number) => {
-    const startPoint = await getMousePosition();
+    try {
+        const startPoint = await getMousePosition();
 
-    const points = [];
+        const points = [];
 
-    for (let i = 0; i <= 360; i += 1) {
-        const rad = Math.PI / 180;
-        const x = startPoint.x + (radius * Math.cos(i * rad)) - radius;
-        const y = startPoint.y + (radius * Math.sin(i * rad));
+        for (let i = 0; i <= 360; i += 1) {
+            const rad = Math.PI / 180;
+            const x = startPoint.x + (radius * Math.cos(i * rad)) - radius;
+            const y = startPoint.y + (radius * Math.sin(i * rad));
 
-        points.push({ x, y });
+            points.push({ x, y });
+        }
+
+        await mouse.drag(points);
+    } catch (e) {
+        throw new Error('Drawing circle failed', e.message);
     }
-
-    await mouse.drag(points);
 };
