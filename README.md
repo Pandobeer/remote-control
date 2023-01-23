@@ -19,6 +19,10 @@
 
 * App served @ `http://localhost:8181` without nodemon
 
+## Port
+To run Websocket client, on program's page input port: 4000.
+Url will look like: ws://localhost:4000
+
 ---
 
 **All commands**

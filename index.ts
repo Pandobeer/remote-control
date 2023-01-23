@@ -6,16 +6,18 @@ import { drawCircle, drawRectangle, drawSquare } from './src/remotecontrollers/d
 import { printScreen } from './src/remotecontrollers/capturescreen';
 
 const HTTP_PORT = 8181;
-const ALT_HTTP_PORT = 8080;
+const ALT_WSS_PORT = 4000;
 
-console.log(`Start static http server on the ${HTTP_PORT} port!`);
-httpServer.listen(HTTP_PORT);
+httpServer.listen(HTTP_PORT, () => {
+    process.stdout.write(`Static http server is running on the ${HTTP_PORT} port \n`);
+    process.stdout.write(`The WebSocket server is running on port ${ALT_WSS_PORT} \n`);
+});
 
-const wss = new WebSocketServer({ port: ALT_HTTP_PORT });
+const wss = new WebSocketServer({ port: ALT_WSS_PORT });
 
 wss.on("connection", async (ws) => {
 
-    console.log('Connection opened');
+    process.stdout.write('Websocket connection is opened \n');
 
     const wsStream = createWebSocketStream(
         ws,
@@ -90,24 +92,22 @@ wss.on("connection", async (ws) => {
             }
         });
 
-        console.log(`The WebSocket server is running on port ${ALT_HTTP_PORT}`);
-
         wsStream.on('error', (e: any) => {
-            console.log(e.message);
+            console.error(e.message);
         });
 
     } catch (e: any) {
-        console.log(e.message);
+        console.error(e.message);
     }
 });
 
 process.on('SIGINT', () => {
+    process.stdout.write('Connection closed \n');
+
     wss.clients.forEach((socket) => {
         socket.close();
     });
     wss.close();
-    httpServer.close();
 
-    console.log('Connection closed');
 });
 

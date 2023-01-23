@@ -17,7 +17,7 @@ export const httpServer = http.createServer(function (req, res) {
 
 });
 
-['SIGINT', 'SIGTERM', 'SIGQUIT']
+['SIGTERM', 'SIGQUIT']
     .forEach(signal => process.on(signal, () => {
         process.exit();
     }));
