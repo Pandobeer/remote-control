@@ -101,12 +101,12 @@ wss.on("connection", async (ws) => {
     }
 });
 
-wss.on('close', () => {
+process.on('SIGINT', () => {
     wss.clients.forEach((socket) => {
         socket.close();
     });
-
     wss.close();
+    httpServer.close();
 
     console.log('Connection closed');
 });
