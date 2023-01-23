@@ -3,17 +3,25 @@ import { getMousePosition } from "./mousehandler";
 
 
 export const drawSquare = async (width: number) => {
-    await mouse.drag(left(width));
-    await mouse.drag(down(width));
-    await mouse.drag(right(width));
-    await mouse.drag(up(width));
+    try {
+        await mouse.drag(left(width));
+        await mouse.drag(down(width));
+        await mouse.drag(right(width));
+        await mouse.drag(up(width));
+    } catch (e: any) {
+        throw new Error('Drawing square failed', e.message);
+    }
 };
 
 export const drawRectangle = async (width: number, length: number) => {
-    await mouse.drag(left(length));
-    await mouse.drag(down(width));
-    await mouse.drag(right(length));
-    await mouse.drag(up(width));
+    try {
+        await mouse.drag(left(length));
+        await mouse.drag(down(width));
+        await mouse.drag(right(length));
+        await mouse.drag(up(width));
+    } catch (e: any) {
+        throw new Error('Drawing rectangle failed', e.message);
+    }
 };
 
 export const drawCircle = async (radius: number) => {
@@ -31,7 +39,7 @@ export const drawCircle = async (radius: number) => {
         }
 
         await mouse.drag(points);
-    } catch (e) {
+    } catch (e: any) {
         throw new Error('Drawing circle failed', e.message);
     }
 };

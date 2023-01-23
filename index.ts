@@ -13,17 +13,18 @@ httpServer.listen(HTTP_PORT);
 
 const wss = new WebSocketServer({ port: ALT_HTTP_PORT });
 
-wss.on('connection', async (ws) => {
+wss.on("connection", async (ws) => {
+
+    console.log('Connection opened');
+
+    const wsStream = createWebSocketStream(
+        ws,
+        {
+            encoding: "utf-8",
+            decodeStrings: false,
+        });
+
     try {
-        console.log('Connection opened');
-
-        const wsStream = createWebSocketStream(
-            ws,
-            {
-                encoding: "utf-8",
-                decodeStrings: false,
-            });
-
         wsStream.on("data", async (chunk: any) => {
             const [command, ...args] = chunk.toString().split(" ");
 
@@ -91,15 +92,22 @@ wss.on('connection', async (ws) => {
 
         console.log(`The WebSocket server is running on port ${ALT_HTTP_PORT}`);
 
-
-        wsStream.on('close', () => {
-            console.log('Connection closed');
+        wsStream.on('error', (e: any) => {
+            console.log(e.message);
         });
 
-        wsStream.on('error', (e) => {
-            throw new Error(e.message);
-        });
     } catch (e: any) {
-        throw new Error(e.message);
+        console.log(e.message);
     }
 });
+
+wss.on('close', () => {
+    wss.clients.forEach((socket) => {
+        socket.close();
+    });
+
+    wss.close();
+
+    console.log('Connection closed');
+});
+

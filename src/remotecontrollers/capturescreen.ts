@@ -32,7 +32,7 @@ export const calcXY = async () => {
             calcy = y - HALF_PRINT_SIZE;
         }
         return { calcx, calcy };
-    } catch (e) {
+    } catch (e: any) {
         throw new Error(e.message);
     }
 };
@@ -57,7 +57,7 @@ export const printScreen = async () => {
         const buffered = buffer.toString("base64");
 
         return `prnt_scrn ${buffered}`;
-    } catch (e) {
+    } catch (e: any) {
         throw new Error(e.message);
     }
 };
